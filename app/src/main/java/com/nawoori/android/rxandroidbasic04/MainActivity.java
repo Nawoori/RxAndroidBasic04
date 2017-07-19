@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         emitData();
     }
     Observable<Integer> observable;
+    Observable<String> observableZip;
     String[] months;
     public void emitData(){
         // 1월~ 12월까지 텍스트를 추출
@@ -51,6 +52,12 @@ public class MainActivity extends AppCompatActivity {
             }
             emitter.onComplete();
         });
+        // 초당 한번씩 출력하는 로직으로 변경 고민...
+        observableZip = Observable.zip(
+                Observable.just("Jong Won","Tiger.JK"),
+                Observable.just("Programmer","Rapper"),
+                (item1, item2) -> "name:"+item1+", job:"+item2
+        );
     }
     public void doMap(View view) {
         observable
@@ -84,7 +91,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void doZip(View view) {
-
+        observableZip
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        item -> {
+                            data.add(item+"");
+                            adapter.notifyItemInserted(data.size()-1);
+                        },
+                        error -> Log.e("Error",error.getMessage()),
+                        () -> Log.i("Complete","Successfully completed!")
+                );
     }
 
     private void initView() {
